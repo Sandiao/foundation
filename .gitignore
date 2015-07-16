@@ -1,5 +1,6 @@
 .externalToolBuilders/
 .settings/
+.gradle/
 build/
 bin/
 .classpath
