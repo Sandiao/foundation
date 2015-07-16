@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+ PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.whut.mybatis.mapper.UserMapper">
+
+	<resultMap type="User" id="userList">
+		<id column = "id" property = "id"></id>
+		<result column = "name" property = "name"></result>
+		<result column = "lastLoginTime" property = "lastLoginTime"></result>
+		<result column = "enabled" property = "enabled"></result>
+	</resultMap>
+	
+	<resultMap type="User" id="userRoleList" extends = "userList">
+		<collection property = "roles" ofType = "Role">
+		    <id column = "roleId" property = "id"></id>
+		    <result column = "roleName" property = "name"></result>
+		</collection>
+	</resultMap>
+	
+	<select id="queryByPage" resultMap="userList">
+		select id, name, lastLoginTime, enabled from user limit #{recordIndex}, #{pageSize}
+	</select>
+	
+	<select id="getTotalCount" resultType="int">
+		select count(*) from user 
+	</select>
+	
+	<select id="advancedQuery" parameterType="UserQueryBean" resultMap="userList">
+		select id, name, enabled from user
+		<trim prefix="where" prefixOverrides="AND|OR">
+				enabled = #{enabled }
+			<if test="null != id and '' != id">
+				and id like concat(concat('%', #{id }), '%')
+			</if>
+			<if test="null != name and '' != name">
+				and name like concat(concat('%', #{name }), '%')
+			</if>
+			<if test="null != email and '' != email">
+				and email like concat(concat('%', #{email }), '%')
+			</if>
+			
+			<if test="null != minLastLoginTime and '' != minLastLoginTime">
+				and lastLoginTime <![CDATA[>=]]> #{minLastLoginTime }
+			</if>
+			<if test="null != maxLastLoginTime and '' != maxLastLoginTime">
+				and lastLoginTime <![CDATA[<=]]> #{maxLastLoginTime }
+			</if>
+			
+			<if test="null != minRegisterTime and '' != minRegisterTime">
+				and registerTime <![CDATA[>=]]> #{minRegisterTime }
+			</if>
+			<if test="null != maxRegisterTime and '' != maxRegisterTime">
+				and registerTime <![CDATA[<=]]> #{maxRegisterTime }
+			</if>
+			
+			<if test="null != minDeadTime and '' != minDeadTime">
+				and deadTime <![CDATA[>=]]> #{minDeadTime }
+			</if>
+			<if test="null != maxDeadTime and '' != maxDeadTime">
+				and deadTime <![CDATA[<=]]> #{maxDeadTime }
+			</if>
+			
+			<if test="null != loginIp and '' != loginIp">
+				and email like concat(concat('%', #{loginIp }), '%')
+			</if>	
+		</trim>
+	</select>
+	
+		<select id="advancedQueryByPage" resultMap="userList">
+		select id, name, lastLoginTime, enabled from user
+		<trim prefix="where" prefixOverrides="AND|OR">
+				enabled = #{userQueryBean.enabled }
+			<if test="null != userQueryBean.id and '' != userQueryBean.id">
+				and id like concat(concat('%', #{userQueryBean.id }), '%')
+			</if>
+			<if test="null != userQueryBean.name and '' != userQueryBean.name">
+				and name like concat(concat('%', #{userQueryBean.name }), '%')
+			</if>
+			<if test="null != userQueryBean.email and '' != userQueryBean.email">
+				and email like concat(concat('%', #{userQueryBean.email }), '%')
+			</if>
+			
+			<if test="null != userQueryBean.minLastLoginTime and '' != userQueryBean.minLastLoginTime">
+				and lastLoginTime <![CDATA[>=]]> #{userQueryBean.minLastLoginTime }
+			</if>
+			<if test="null != userQueryBean.maxLastLoginTime and '' != userQueryBean.maxLastLoginTime">
+				and lastLoginTime <![CDATA[<=]]> #{userQueryBean.maxLastLoginTime }
+			</if>
+			
+			<if test="null != userQueryBean.minRegisterTime and '' != userQueryBean.minRegisterTime">
+				and registerTime <![CDATA[>=]]> #{userQueryBean.minRegisterTime }
+			</if>
+			<if test="null != userQueryBean.maxRegisterTime and '' != userQueryBean.maxRegisterTime">
+				and registerTime <![CDATA[<=]]> #{userQueryBean.maxRegisterTime }
+			</if>
+			
+			<if test="null != userQueryBean.minDeadTime and '' != userQueryBean.minDeadTime">
+				and deadTime <![CDATA[>=]]> #{userQueryBean.minDeadTime }
+			</if>
+			<if test="null != userQueryBean.maxDeadTime and '' != userQueryBean.maxDeadTime">
+				and deadTime <![CDATA[<=]]> #{userQueryBean.maxDeadTime }
+			</if>
+			
+			<if test="null != userQueryBean.loginIp and '' != userQueryBean.loginIp">
+				and email like concat(concat('%', #{userQueryBean.loginIp }), '%')
+			</if>		
+		</trim>
+		    limit #{recordIndex }, #{pageSize }
+	</select>
+	
+	<select id="advancedQueryCount" parameterType="UserQueryBean" resultType="int">
+		select count(*) from user
+		<trim prefix="where" prefixOverrides="AND|OR">
+				enabled = #{enabled }
+			<if test="null != id and '' != id">
+				and id like concat(concat('%', #{id }), '%')
+			</if>
+			<if test="null != name and '' != name">
+				and name like concat(concat('%', #{name }), '%')
+			</if>
+			<if test="null != email and '' != email">
+				and email like concat(concat('%', #{email }), '%')
+			</if>
+			
+			<if test="null != minLastLoginTime and '' != minLastLoginTime">
+				and lastLoginTime <![CDATA[>=]]> #{minLastLoginTime }
+			</if>
+			<if test="null != maxLastLoginTime and '' != maxLastLoginTime">
+				and lastLoginTime <![CDATA[<=]]> #{maxLastLoginTime }
+			</if>
+			
+			<if test="null != minRegisterTime and '' != minRegisterTime">
+				and registerTime <![CDATA[>=]]> #{minRegisterTime }
+			</if>
+			<if test="null != maxRegisterTime and '' != maxRegisterTime">
+				and registerTime <![CDATA[<=]]> #{maxRegisterTime }
+			</if>
+			
+			<if test="null != minDeadTime and '' != minDeadTime">
+				and deadTime <![CDATA[>=]]> #{minDeadTime }
+			</if>
+			<if test="null != maxDeadTime and '' != maxDeadTime">
+				and deadTime <![CDATA[<=]]> #{maxDeadTime }
+			</if>
+			
+			<if test="null != loginIp and '' != loginIp">
+				and email like concat(concat('%', #{loginIp }), '%')
+			</if>		
+		</trim>
+	</select>
+	
+	<select id="advancedQueryByPageWithRoles" parameterType="UserQueryBean" resultMap="userRoleList">
+		select u.id, u.name, u.lastLoginTime, u.enabled, r.id as roleId, r.name as roleName from user u 
+		left join userrole ur on u.id = ur.userId 
+		left join role r on ur.roleId = r.id 
+		<trim prefix="where" prefixOverrides="AND|OR">
+				u.enabled = #{userQueryBean.enabled }
+			<if test="null != userQueryBean.id and '' != userQueryBean.id">
+				and u.id like concat(concat('%', #{userQueryBean.id }), '%')
+			</if>
+			<if test="null != userQueryBean.name and '' != userQueryBean.name">
+				and u.name like concat(concat('%', #{userQueryBean.name }), '%')
+			</if>
+			<if test="null != userQueryBean.email and '' != userQueryBean.email">
+				and u.email like concat(concat('%', #{userQueryBean.email }), '%')
+			</if>
+			
+			<if test="null != userQueryBean.minLastLoginTime and '' != userQueryBean.minLastLoginTime">
+				and u.lastLoginTime <![CDATA[>=]]> #{userQueryBean.minLastLoginTime }
+			</if>
+			<if test="null != userQueryBean.maxLastLoginTime and '' != userQueryBean.maxLastLoginTime">
+				and u.lastLoginTime <![CDATA[<=]]> #{userQueryBean.maxLastLoginTime }
+			</if>
+			
+			<if test="null != userQueryBean.minRegisterTime and '' != userQueryBean.minRegisterTime">
+				and u.registerTime <![CDATA[>=]]> #{userQueryBean.minRegisterTime }
+			</if>
+			<if test="null != userQueryBean.maxRegisterTime and '' != userQueryBean.maxRegisterTime">
+				and u.registerTime <![CDATA[<=]]> #{userQueryBean.maxRegisterTime }
+			</if>
+			
+			<if test="null != userQueryBean.minDeadTime and '' != userQueryBean.minDeadTime">
+				and u.deadTime <![CDATA[>=]]> #{userQueryBean.minDeadTime }
+			</if>
+			<if test="null != userQueryBean.maxDeadTime and '' != userQueryBean.maxDeadTime">
+				and u.deadTime <![CDATA[<=]]> #{userQueryBean.maxDeadTime }
+			</if>
+			
+			<if test="null != userQueryBean.loginIp and '' != userQueryBean.loginIp">
+				and u.email like concat(concat('%', #{userQueryBean.loginIp }), '%')
+			</if>		
+		</trim>
+			limit #{recordIndex }, #{pageSize }
+	</select>
+          
+</mapper>

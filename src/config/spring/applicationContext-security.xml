@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<beans:beans xmlns="http://www.springframework.org/schema/security"
+			 xmlns:context="http://www.springframework.org/schema/context" 
+			 xmlns:beans="http://www.springframework.org/schema/beans"
+			 xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+			 xsi:schemaLocation="http://www.springframework.org/schema/beans 
+			 					 http://www.springframework.org/schema/beans/spring-beans-3.2.xsd
+			 					 http://www.springframework.org/schema/context 
+	   							 http://www.springframework.org/schema/context/spring-context-3.2.xsd 
+			 					 http://www.springframework.org/schema/security 
+			 					 http://www.springframework.org/schema/security/spring-security-3.2.xsd">
+	
+
+	<!-- declaring base package -->
+	<context:component-scan base-package="com.whut" />
+	
+	<!-- enable auto wire -->
+	<context:annotation-config />
+	
+	<!-- 登录页面不过滤  -->
+	<http pattern="/index.jsp" security="none" />
+	<!-- css,img,js不过滤  -->
+	<http pattern="/assets/**" security="none" />
+	 	 					 
+	<http use-expressions="true" entry-point-ref="userAuthenticationEntryPoint" access-denied-page="/templates/accessDenied.jsp">	
+				
+		<!-- 检测失效的sessionId,超时时定位到另外一个URL 
+  		<session-management invalid-session-url="/index.jsp">
+  			<concurrency-control max-sessions="1" />
+  		</session-management> -->
+  		
+		<custom-filter position="CONCURRENT_SESSION_FILTER" ref="concurrencyFilter" />
+		<session-management invalid-session-url="/templates/sessionExpired.jsp" session-authentication-strategy-ref="sas"/>
+		
+        <!-- 用户登入验证 -->
+        <custom-filter ref="userAuthenticationFilter" position="FORM_LOGIN_FILTER"  />
+        
+		<!-- 增加一个自定义的filter，放在FILTER_SECURITY_INTERCEPTOR之前，
+  			  实现用户、角色、权限、资源的数据库管理。  -->
+  		<custom-filter ref="userAuthorizationFilter" before="FILTER_SECURITY_INTERCEPTOR" />
+  		 
+        <!-- 登出管理 -->
+        <logout invalidate-session="true" logout-url="/j_spring_security_logout" logout-success-url="/index.jsp" />
+        
+	</http>
+	
+	<!-- 未登录的切入点 -->
+    <beans:bean id="userAuthenticationEntryPoint" class="org.springframework.security.web.authentication.LoginUrlAuthenticationEntryPoint">
+        <beans:property name="loginFormUrl" value="/index.jsp" />
+    </beans:bean>
+	
+	<!-- 并发过滤器 -->
+	<beans:bean id="concurrencyFilter" class="org.springframework.security.web.session.ConcurrentSessionFilter">
+  		<beans:property name="sessionRegistry" ref="sessionRegistry" />
+  		<beans:property name="expiredUrl" value="/templates/sessionExpired.jsp" />
+	</beans:bean>
+	
+	<beans:bean id="sas" class="org.springframework.security.web.authentication.session.CompositeSessionAuthenticationStrategy">
+		<beans:constructor-arg>
+			<beans:list>
+				<beans:bean class="org.springframework.security.web.authentication.session.ConcurrentSessionControlAuthenticationStrategy">
+		        	<beans:constructor-arg ref="sessionRegistry"/>
+		        	<beans:property name="maximumSessions" value="1" />
+		        	<beans:property name="exceptionIfMaximumExceeded" value="false" />
+				</beans:bean>
+				<beans:bean class="org.springframework.security.web.authentication.session.SessionFixationProtectionStrategy"></beans:bean>
+			    <beans:bean class="org.springframework.security.web.authentication.session.RegisterSessionAuthenticationStrategy">
+			        <beans:constructor-arg ref="sessionRegistry"/>
+				</beans:bean>
+		    </beans:list>
+		</beans:constructor-arg>
+	</beans:bean>
+	
+	<beans:bean id="sessionRegistry" class="org.springframework.security.core.session.SessionRegistryImpl" />
+    
+    <beans:bean id="securityMetadataSourceService" class="com.whut.web.security.SecurityMetadataSourceServiceImpl" >
+    	<beans:constructor-arg name="resourceService" ref="resourceService" />
+    </beans:bean>
+	
+	<!-- 用户拥有的权限：登录后取得用户所保有的权限信息 -->
+    <authentication-manager alias="userAuthenticationManager">
+        <authentication-provider user-service-ref="userDetailsService">
+        	<password-encoder ref="passwordEncoder" />
+        </authentication-provider>
+    </authentication-manager>
+    
+    <beans:bean id="passwordEncoder" class="org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder" />
+    
+    <!-- 访问决策器，决定某个用户具有的角色，是否有足够的权限去访问某个资源。 -->
+ 	<beans:bean id="userAccessDecisionManager" class="com.whut.web.security.UserAccessDecisionManager" />
+ 	
+ 	<!-- 登录验证器：用户有没有登录的资格 -->
+    <beans:bean id="userAuthenticationFilter" class="com.whut.web.security.UserAuthenticationFilter">
+        <beans:property name="authenticationManager" ref="userAuthenticationManager" />
+        <beans:property name="filterProcessesUrl" value="/j_spring_security_check" />
+        <beans:property name="sessionAuthenticationStrategy" ref="sas" />
+        
+        <!-- 登录验证成功跳转页面 -->
+        <beans:property name="authenticationSuccessHandler">
+            <beans:bean class="org.springframework.security.web.authentication.SavedRequestAwareAuthenticationSuccessHandler">
+                <beans:property name="defaultTargetUrl" value="/main.jsp" />
+            </beans:bean>
+        </beans:property>
+        
+        <!-- 登录验证失败跳转页面 -->
+        <beans:property name="authenticationFailureHandler">
+            <beans:bean class="org.springframework.security.web.authentication.SimpleUrlAuthenticationFailureHandler">
+                <beans:property name="defaultFailureUrl" value="/index.jsp" />
+            </beans:bean>
+        </beans:property>
+    </beans:bean>
+    
+	<!-- 认证过滤器 -->
+    <beans:bean id="userAuthorizationFilter" class="com.whut.web.security.UserAuthorizationFilter">
+        <!-- 用户拥有的权限 -->
+        <beans:property name="authenticationManager" ref="userAuthenticationManager" />
+        <!-- 用户是否拥有所请求资源的权限 -->
+        <beans:property name="accessDecisionManager" ref="userAccessDecisionManager" />
+        <!-- 资源与权限对应关系 -->
+        <beans:property name="securityMetadataSource" ref="securityMetadataSourceService" />
+    </beans:bean>
+    
+</beans:beans>

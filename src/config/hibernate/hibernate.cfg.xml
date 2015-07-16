@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE hibernate-configuration PUBLIC
+        "-//Hibernate/Hibernate Configuration DTD 3.0//EN"
+        "http://www.hibernate.org/dtd/hibernate-configuration-3.0.dtd">
+
+<hibernate-configuration>
+    <session-factory>
+        <mapping class="com.whut.web.entity.User"/>
+        <mapping class="com.whut.web.entity.Role"/>
+        <mapping class="com.whut.web.entity.Resource"/>
+        <mapping class="com.whut.web.entity.Log"/>
+    </session-factory>
+</hibernate-configuration>
